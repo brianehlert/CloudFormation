@@ -1,0 +1,399 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Resources": {
+    "vpced79d294": {
+      "Type": "AWS::EC2::VPC",
+      "Properties": {
+        "CidrBlock": "172.16.0.0/16",
+        "InstanceTenancy": "default",
+        "EnableDnsSupport": "true",
+        "EnableDnsHostnames": "true"
+      }
+    },
+    "subnet34d00d6e": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "CidrBlock": "172.16.3.0/24",
+        "AvailabilityZone": "us-west-2c",
+        "VpcId": {
+          "Ref": "vpced79d294"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "usWest2c"
+          }
+        ]
+      }
+    },
+    "subnet7dc72804": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "CidrBlock": "172.16.0.0/24",
+        "AvailabilityZone": "us-west-2a",
+        "VpcId": {
+          "Ref": "vpced79d294"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "Public subnet"
+          }
+        ]
+      }
+    },
+    "subnetf8202eb0": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "CidrBlock": "172.16.2.0/24",
+        "AvailabilityZone": "us-west-2b",
+        "VpcId": {
+          "Ref": "vpced79d294"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "usWest2b"
+          }
+        ]
+      }
+    },
+    "subnet66c32c1f": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "CidrBlock": "172.16.1.0/24",
+        "AvailabilityZone": "us-west-2a",
+        "VpcId": {
+          "Ref": "vpced79d294"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "usWest2a"
+          }
+        ]
+      }
+    },
+    "igw648e2b02": {
+      "Type": "AWS::EC2::InternetGateway",
+      "Properties": {
+      }
+    },
+    "doptedbf7094": {
+      "Type": "AWS::EC2::DHCPOptions",
+      "Properties": {
+        "DomainName": "us-west-2.compute.internal",
+        "DomainNameServers": [
+          "AmazonProvidedDNS"
+        ]
+      }
+    },
+    "acl03daf87a": {
+      "Type": "AWS::EC2::NetworkAcl",
+      "Properties": {
+        "VpcId": {
+          "Ref": "vpced79d294"
+        }
+      }
+    },
+    "rtb243af35c": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": {
+          "Ref": "vpced79d294"
+        }
+      }
+    },
+    "instancei05c6c95cdd6fbebe8": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "DisableApiTermination": "false",
+        "InstanceInitiatedShutdownBehavior": "stop",
+        "ImageId": "ami-aafb59d2",
+        "InstanceType": "t2.micro",
+        "KeyName": "demoKeyPair",
+        "Monitoring": "false",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "openCart2-west2a"
+          }
+        ],
+        "NetworkInterfaces": [
+          {
+            "DeleteOnTermination": "true",
+            "DeviceIndex": 0,
+            "SubnetId": {
+              "Ref": "subnet66c32c1f"
+            },
+            "PrivateIpAddresses": [
+              {
+                "PrivateIpAddress": "172.16.1.185",
+                "Primary": "true"
+              }
+            ],
+            "GroupSet": [
+              {
+                "Ref": "sgdemoSecurityGroup"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "instancei02dd24bc910686935": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "DisableApiTermination": "false",
+        "InstanceInitiatedShutdownBehavior": "stop",
+        "ImageId": "ami-aafb59d2",
+        "InstanceType": "t2.micro",
+        "KeyName": "demoKeyPair",
+        "Monitoring": "false",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "openCart2-west2c"
+          }
+        ],
+        "NetworkInterfaces": [
+          {
+            "DeleteOnTermination": "true",
+            "DeviceIndex": 0,
+            "SubnetId": {
+              "Ref": "subnet34d00d6e"
+            },
+            "PrivateIpAddresses": [
+              {
+                "PrivateIpAddress": "172.16.3.63",
+                "Primary": "true"
+              }
+            ],
+            "GroupSet": [
+              {
+                "Ref": "sgdemoSecurityGroup"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "instancei0116ca9f8de8251ad": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "DisableApiTermination": "false",
+        "InstanceInitiatedShutdownBehavior": "stop",
+        "ImageId": "ami-aafb59d2",
+        "InstanceType": "t2.micro",
+        "KeyName": "demoKeyPair",
+        "Monitoring": "false",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "openCart2-west2b"
+          }
+        ],
+        "NetworkInterfaces": [
+          {
+            "DeleteOnTermination": "true",
+            "DeviceIndex": 0,
+            "SubnetId": {
+              "Ref": "subnetf8202eb0"
+            },
+            "PrivateIpAddresses": [
+              {
+                "PrivateIpAddress": "172.16.2.191",
+                "Primary": "true"
+              }
+            ],
+            "GroupSet": [
+              {
+                "Ref": "sgdemoSecurityGroup"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "sgdemoSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "restricted ssh, http, https",
+        "VpcId": {
+          "Ref": "vpced79d294"
+        }
+      }
+    },
+    "acl1": {
+      "Type": "AWS::EC2::NetworkAclEntry",
+      "Properties": {
+        "CidrBlock": "0.0.0.0/0",
+        "Egress": "true",
+        "Protocol": "-1",
+        "RuleAction": "allow",
+        "RuleNumber": "100",
+        "NetworkAclId": {
+          "Ref": "acl03daf87a"
+        }
+      }
+    },
+    "acl2": {
+      "Type": "AWS::EC2::NetworkAclEntry",
+      "Properties": {
+        "CidrBlock": "0.0.0.0/0",
+        "Protocol": "-1",
+        "RuleAction": "allow",
+        "RuleNumber": "100",
+        "NetworkAclId": {
+          "Ref": "acl03daf87a"
+        }
+      }
+    },
+    "subnetacl1": {
+      "Type": "AWS::EC2::SubnetNetworkAclAssociation",
+      "Properties": {
+        "NetworkAclId": {
+          "Ref": "acl03daf87a"
+        },
+        "SubnetId": {
+          "Ref": "subnet7dc72804"
+        }
+      }
+    },
+    "subnetacl2": {
+      "Type": "AWS::EC2::SubnetNetworkAclAssociation",
+      "Properties": {
+        "NetworkAclId": {
+          "Ref": "acl03daf87a"
+        },
+        "SubnetId": {
+          "Ref": "subnet34d00d6e"
+        }
+      }
+    },
+    "subnetacl3": {
+      "Type": "AWS::EC2::SubnetNetworkAclAssociation",
+      "Properties": {
+        "NetworkAclId": {
+          "Ref": "acl03daf87a"
+        },
+        "SubnetId": {
+          "Ref": "subnet66c32c1f"
+        }
+      }
+    },
+    "subnetacl4": {
+      "Type": "AWS::EC2::SubnetNetworkAclAssociation",
+      "Properties": {
+        "NetworkAclId": {
+          "Ref": "acl03daf87a"
+        },
+        "SubnetId": {
+          "Ref": "subnetf8202eb0"
+        }
+      }
+    },
+    "gw1": {
+      "Type": "AWS::EC2::VPCGatewayAttachment",
+      "Properties": {
+        "VpcId": {
+          "Ref": "vpced79d294"
+        },
+        "InternetGatewayId": {
+          "Ref": "igw648e2b02"
+        }
+      }
+    },
+    "subnetroute2": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "rtb243af35c"
+        },
+        "SubnetId": {
+          "Ref": "subnet7dc72804"
+        }
+      }
+    },
+    "route1": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "RouteTableId": {
+          "Ref": "rtb243af35c"
+        },
+        "GatewayId": {
+          "Ref": "igw648e2b02"
+        }
+      },
+      "DependsOn": "gw1"
+    },
+    "dchpassoc1": {
+      "Type": "AWS::EC2::VPCDHCPOptionsAssociation",
+      "Properties": {
+        "VpcId": {
+          "Ref": "vpced79d294"
+        },
+        "DhcpOptionsId": {
+          "Ref": "doptedbf7094"
+        }
+      }
+    },
+    "assoc1": {
+      "Type": "AWS::EC2::EIPAssociation",
+      "Properties": {
+        "AllocationId": "34.216.156.238",
+        "InstanceId": {
+          "Ref": "instancei02dd24bc910686935"
+        }
+      }
+    },
+    "ingress1": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "sgdemoSecurityGroup"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": "80",
+        "ToPort": "80",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "ingress2": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "sgdemoSecurityGroup"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": "22",
+        "ToPort": "22",
+        "CidrIp": "71.197.225.14/32"
+      }
+    },
+    "ingress3": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "sgdemoSecurityGroup"
+        },
+        "IpProtocol": "tcp",
+        "FromPort": "443",
+        "ToPort": "443",
+        "CidrIp": "0.0.0.0/0"
+      }
+    },
+    "egress1": {
+      "Type": "AWS::EC2::SecurityGroupEgress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "sgdemoSecurityGroup"
+        },
+        "IpProtocol": "-1",
+        "CidrIp": "0.0.0.0/0"
+      }
+    }
+  },
+  "Description": "VPC, OpenCart, scaled across three regions"
+}

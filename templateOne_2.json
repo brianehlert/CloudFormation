@@ -1,0 +1,159 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Resources": {
+        "VPCOpenCart": {
+            "Type": "AWS::EC2::VPC",
+            "Properties": {
+                "CidrBlock": "172.16.0.0/16",
+                "EnableDnsSupport": "true",
+                "EnableDnsHostnames": "true",
+                "InstanceTenancy": "default"
+            }
+        },
+        "InternetGatewayOpenCart": {
+            "Type": "AWS::EC2::InternetGateway"
+        },
+        "VPCGatewayAttachment": {
+            "Type": "AWS::EC2::VPCGatewayAttachment",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPCOpenCart"
+                },
+                "InternetGatewayId": {
+                    "Ref": "InternetGatewayOpenCart"
+                }
+            }
+        },
+        "SubnetOpenCartuswest2a": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "AvailabilityZone": "us-west-2a",
+                "VpcId": {
+                    "Ref": "VPCOpenCart"
+                },
+                "CidrBlock": "172.16.1.0/24",
+                "MapPublicIpOnLaunch": "true"
+            }
+        },
+        "SubnetOpenCartuswest2b": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "AvailabilityZone": "us-west-2b",
+                "VpcId": {
+                    "Ref": "VPCOpenCart"
+                },
+                "CidrBlock": "172.16.2.0/24",
+                "MapPublicIpOnLaunch": "true"
+            }
+        },
+        "SubnetOpenCartuswest2c": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "AvailabilityZone": "us-west-2c",
+                "VpcId": {
+                    "Ref": "VPCOpenCart"
+                },
+                "CidrBlock": "172.16.3.0/24",
+                "MapPublicIpOnLaunch": "true"
+            }
+        },
+        "RouteTableOpenCart": {
+            "Type": "AWS::EC2::RouteTable",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPCOpenCart"
+                }
+            }
+        },
+        "InternetRouteOpenCart": {
+            "Type": "AWS::EC2::Route",
+            "DependsOn": "InternetGatewayOpenCart",
+            "Properties": {
+                "DestinationCidrBlock": "0.0.0.0/0",
+                "GatewayId": {
+                    "Ref": "InternetGatewayOpenCart"
+                },
+                "RouteTableId": {
+                    "Ref": "RouteTableOpenCart"
+                }
+            }
+        },
+        "SubnetOpenCartuswest2aRouteTableAssociation": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "RouteTableOpenCart"
+                },
+                "SubnetId": {
+                    "Ref": "SubnetOpenCartuswest2a"
+                }
+            }
+        },
+        "SubnetOpenCartuswest2bRouteTableAssociation": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "RouteTableOpenCart"
+                },
+                "SubnetId": {
+                    "Ref": "SubnetOpenCartuswest2b"
+                }
+            }
+        },
+        "SubnetOpenCartuswest2cRouteTableAssociation": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "RouteTableOpenCart"
+                },
+                "SubnetId": {
+                    "Ref": "SubnetOpenCartuswest2c"
+                }
+            }
+        },
+        "SecurityGroupOpenCart": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupName": "OpenCart Group",
+                "GroupDescription": "HTTP in, HTTPS in, all traffic out.",
+                "VpcId": {
+                    "Ref": "VPCOpenCart"
+                }
+            }
+        },
+        "ingressOpenCart1": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "SecurityGroupOpenCart"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": "80",
+                "ToPort": "80",
+                "CidrIp": "0.0.0.0/0"
+            }
+        },
+        "ingressOpenCart2": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "SecurityGroupOpenCart"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": "443",
+                "ToPort": "443",
+                "CidrIp": "0.0.0.0/0"
+            }
+        },
+        "egressOpenCart": {
+            "Type": "AWS::EC2::SecurityGroupEgress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "SecurityGroupOpenCart"
+                },
+                "IpProtocol": "-1",
+                "CidrIp": "0.0.0.0/0"
+            }
+        }
+    }
+}
