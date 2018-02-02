@@ -1,0 +1,345 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description" : "This is a sample OpenCart template. Hardcoded to the US West 2 region (Oregon)",
+    "Parameters": {
+        "KeyName": {
+            "Description": "The EC2 Key Pair to allow SSH access to the instance",
+            "Type": "AWS::EC2::KeyPair::KeyName"
+        },
+        "CertificateARN" : {
+            "Type" : "String",
+            "Description" : "The ARN for the load balancer certificate",
+            "Default" : "arn:aws:acm:us-west-2:635759328393:certificate/76be3c19-8c42-4cf9-8d7b-4e5042daf696", 
+            "ConstraintDescription" : "must be the ARN of an existing certificate"
+          },
+          "InstanceSize" : {
+            "Description" : "Size of OpenCart instance",
+            "Type" : "String",
+            "Default" : "t2.micro",
+            "AllowedValues" : [ "t1.micro", "t2.nano", "t2.micro" ]
+          }
+        },
+    "Resources": {
+        "VPCOpenCart": {
+            "Type": "AWS::EC2::VPC",
+            "Metadata": {
+                "Comment": "This is the start of the VPC definition.  CIDR of the VPC, subnets, availability zone per subnet, gateway, and ingress / egress for the gateway"
+            },
+            "Properties": {
+                "CidrBlock": "172.16.0.0/16",
+                "EnableDnsSupport": "true",
+                "EnableDnsHostnames": "true",
+                "InstanceTenancy": "default",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "OpenCart VPC"
+                    }
+                ]
+            }
+        },
+        "InternetGatewayOpenCart": {
+            "Type": "AWS::EC2::InternetGateway"
+        },
+        "VPCGatewayAttachment": {
+            "Type": "AWS::EC2::VPCGatewayAttachment",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPCOpenCart"
+                },
+                "InternetGatewayId": {
+                    "Ref": "InternetGatewayOpenCart"
+                }
+            }
+        },
+        "SubnetOpenCartuswest2a": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "AvailabilityZone": "us-west-2a",
+                "VpcId": {
+                    "Ref": "VPCOpenCart"
+                },
+                "CidrBlock": "172.16.1.0/24",
+                "MapPublicIpOnLaunch": "true"
+            }
+        },
+        "SubnetOpenCartuswest2b": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "AvailabilityZone": "us-west-2b",
+                "VpcId": {
+                    "Ref": "VPCOpenCart"
+                },
+                "CidrBlock": "172.16.2.0/24",
+                "MapPublicIpOnLaunch": "true"
+            }
+        },
+        "SubnetOpenCartuswest2c": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "AvailabilityZone": "us-west-2c",
+                "VpcId": {
+                    "Ref": "VPCOpenCart"
+                },
+                "CidrBlock": "172.16.3.0/24",
+                "MapPublicIpOnLaunch": "true"
+            }
+        },
+        "RouteTableOpenCart": {
+            "Type": "AWS::EC2::RouteTable",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "VPCOpenCart"
+                }
+            }
+        },
+        "InternetRouteOpenCart": {
+            "Type": "AWS::EC2::Route",
+            "DependsOn": "InternetGatewayOpenCart",
+            "Properties": {
+                "DestinationCidrBlock": "0.0.0.0/0",
+                "GatewayId": {
+                    "Ref": "InternetGatewayOpenCart"
+                },
+                "RouteTableId": {
+                    "Ref": "RouteTableOpenCart"
+                }
+            }
+        },
+        "SubnetOpenCartuswest2aRouteTableAssociation": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "RouteTableOpenCart"
+                },
+                "SubnetId": {
+                    "Ref": "SubnetOpenCartuswest2a"
+                }
+            }
+        },
+        "SubnetOpenCartuswest2bRouteTableAssociation": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "RouteTableOpenCart"
+                },
+                "SubnetId": {
+                    "Ref": "SubnetOpenCartuswest2b"
+                }
+            }
+        },
+        "SubnetOpenCartuswest2cRouteTableAssociation": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "RouteTableOpenCart"
+                },
+                "SubnetId": {
+                    "Ref": "SubnetOpenCartuswest2c"
+                }
+            }
+        },
+        "SecurityGroupOpenCart": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupName": "OpenCart Group",
+                "GroupDescription": "HTTP in, HTTPS in, all traffic out.",
+                "VpcId": {
+                    "Ref": "VPCOpenCart"
+                }
+            }
+        },
+        "ingressOpenCart1": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "SecurityGroupOpenCart"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": "80",
+                "ToPort": "80",
+                "CidrIp": "0.0.0.0/0"
+            }
+        },
+        "ingressOpenCart2": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "SecurityGroupOpenCart"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": "443",
+                "ToPort": "443",
+                "CidrIp": "0.0.0.0/0"
+            }
+        },
+        "egressOpenCart": {
+            "Type": "AWS::EC2::SecurityGroupEgress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "SecurityGroupOpenCart"
+                },
+                "IpProtocol": "-1",
+                "CidrIp": "0.0.0.0/0"
+            }
+        },
+        "instanceOpenCartAzWest2a": {
+            "Type": "AWS::EC2::Instance",
+            "Metadata": {
+                "Description": "OpenCart Bitnami",
+                "AvailabilityZone": "azOne"
+            },
+            "Properties": {
+                "DisableApiTermination": "false",
+                "InstanceInitiatedShutdownBehavior": "stop",
+                "ImageId": "ami-aafb59d2",
+                "KeyName": {
+                    "Ref": "KeyName"
+                },
+                "InstanceType": { "Ref": "InstanceSize"},
+                "Monitoring": "false",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "openCart-west2a"
+                    }
+                ],
+                "NetworkInterfaces": [
+                    {
+                        "AssociatePublicIpAddress": "false",
+                        "DeleteOnTermination": "true",
+                        "DeviceIndex": 0,
+                        "SubnetId": {
+                            "Ref": "SubnetOpenCartuswest2a"
+                        },
+                        "GroupSet": [
+                            {
+                                "Ref": "SecurityGroupOpenCart"
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "instanceOpenCartAzWest2b": {
+            "Type": "AWS::EC2::Instance",
+            "Metadata": {
+                "Description": "OpenCart Bitnami",
+                "AvailabilityZone": "azTwo"
+            },
+            "Properties": {
+                "DisableApiTermination": "false",
+                "InstanceInitiatedShutdownBehavior": "stop",
+                "ImageId": "ami-aafb59d2",
+                "KeyName": {
+                    "Ref": "KeyName"
+                },
+                "InstanceType": { "Ref": "InstanceSize"},
+                "Monitoring": "false",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "openCart-west2b"
+                    }
+                ],
+                "NetworkInterfaces": [
+                    {
+                        "AssociatePublicIpAddress": "false",
+                        "DeleteOnTermination": "true",
+                        "DeviceIndex": 0,
+                        "SubnetId": {
+                            "Ref": "SubnetOpenCartuswest2b"
+                        },
+                        "GroupSet": [
+                            {
+                                "Ref": "SecurityGroupOpenCart"
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "instanceOpenCartAzWest2c": {
+            "Type": "AWS::EC2::Instance",
+            "Metadata": {
+                "Description": "OpenCart Bitnami",
+                "AvailabilityZone": "azThree"
+            },
+            "Properties": {
+                "DisableApiTermination": "false",
+                "InstanceInitiatedShutdownBehavior": "stop",
+                "ImageId": "ami-aafb59d2",
+                "KeyName": {
+                    "Ref": "KeyName"
+                },
+                "InstanceType": { "Ref": "InstanceSize"},
+                "Monitoring": "false",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "openCart-west2c"
+                    }
+                ],
+                "NetworkInterfaces": [
+                    {
+                        "AssociatePublicIpAddress": "false",
+                        "DeleteOnTermination": "true",
+                        "DeviceIndex": 0,
+                        "SubnetId": {
+                            "Ref": "SubnetOpenCartuswest2c"
+                        },
+                        "GroupSet": [
+                            {
+                                "Ref": "SecurityGroupOpenCart"
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "ElasticLoadBalancer": {
+            "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+            "Properties": {
+                "LoadBalancerName": "OpenCart-ELB",
+                "Subnets": [
+                    { "Ref": "SubnetOpenCartuswest2a" }, { "Ref": "SubnetOpenCartuswest2b" },{ "Ref": "SubnetOpenCartuswest2c"}
+                ],
+                "CrossZone": "true",
+                "SecurityGroups": [{
+                    "Ref": "SecurityGroupOpenCart"
+                }],
+                "Instances": [
+                    {
+                        "Ref": "instanceOpenCartAzWest2a"
+                    },
+                    {
+                        "Ref": "instanceOpenCartAzWest2b"
+                    },
+                    {
+                        "Ref": "instanceOpenCartAzWest2c"
+                    }
+                ],
+                "Listeners": [
+                    {
+                        "LoadBalancerPort": "80",
+                        "InstancePort": "80",
+                        "Protocol": "HTTP"
+                    },
+                    {
+                        "LoadBalancerPort": "443",
+                        "InstancePort": "443",
+                        "Protocol": "HTTPS",
+                        "SSLCertificateId": { "Ref": "CertificateARN"}
+                    }
+                ],
+                "HealthCheck": {
+                    "Target": "HTTP:80/",
+                    "HealthyThreshold": "3",
+                    "UnhealthyThreshold": "5",
+                    "Interval": "30",
+                    "Timeout": "5"
+                }
+            }
+        }
+    }
+}
